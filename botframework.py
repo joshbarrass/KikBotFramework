@@ -22,7 +22,7 @@ class Bot(object):
             if command_list != None:
                 command_list = command_list.lower()
         self.command_list_command = command_list
-        self.keyboard_entries = [self.command_list_command] if not case_sensitve else [self.command_list_command.title()]
+        self.keyboard_entries = [self.command_list_command] if not case_sensitive else [self.command_list_command.title()]
 
     def start(self,route="/incoming"):
         @app.route(route,methods=["POST","GET"])
