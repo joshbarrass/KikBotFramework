@@ -8,10 +8,13 @@ from kik.messages import messages_from_json, TextMessage, PictureMessage,\
 app = Flask(__name__)
 
 class Bot(object):
-    def __init__(self,username,api_key):
+    def __init__(self,username,api_key,webhook):
         self.functions = {}
         self.help = {}
         self.kik = KikApi(username, api_key)
+        self.kik.set_configuration(Configuration(
+            webhook=webhook
+        ))
 
     def start(self,route="/incoming"):
         @app.route(route,methods=["POST","GET"])
@@ -31,7 +34,7 @@ class Bot(object):
                         r = self.functions[command](text_data)
                         for m in r:
                             if m.to == None:
-                                m.to = messasge.from_user
+                                m.to = message.from_user
                             if m.chat_id == None:
                                 m.chat_id = message.chat_id
                     else:
