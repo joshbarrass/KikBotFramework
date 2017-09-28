@@ -8,7 +8,7 @@ from kik.messages import messages_from_json, TextMessage, PictureMessage,\
 app = Flask(__name__)
 
 class Bot(object):
-    def __init__(self,username,api_key,webhook,case_sensitive=False):
+    def __init__(self,username,api_key,webhook,case_sensitive=False,command_list="Commands"):
         self.functions = {}
         self.help = {}
         self.keyboard_entries = []
@@ -17,6 +17,12 @@ class Bot(object):
             webhook=webhook
         ))
         self.case_sensitive = case_sensitive
+        if not isinstance(command_list,str):
+            command_list = None
+        if not case_sensitive:
+            if command_list != None:
+                command_list = command_list.lower()
+        self.command_list_command = command_list
 
     def start(self,route="/incoming"):
         @app.route(route,methods=["POST","GET"])
@@ -39,23 +45,30 @@ class Bot(object):
                     if not self.case_sensitive:
                         command = command.lower()
                     text_data = " ".join(split[1:])
-                    if self.functions.has_key(command):
+                    if command == self.command_list_command:
+                        r = [TextMessage(
+                                to=message.from_user,
+                                chat_id=message.chat_id,
+                                body=self.command_list())]
+                    elif self.functions.has_key(command):
                         r = self.functions[command](text_data)
-                        for m in r:
-                            if m.to == None:
-                                m.to = message.from_user
-                            if m.chat_id == None:
-                                m.chat_id = message.chat_id
-                            if m.keyboards == []:
-                                keyboard = self.make_keyboard()
-                                if len(keyboard.responses) > 0:
-                                    m.keyboards.append(keyboard)
                                     
                     else:
                         r = [TextMessage(
                             to=message.from_user,
                             chat_id=message.chat_id,
                             body="Unknown command.")]
+
+                    for m in r:
+                        if m.to == None:
+                            m.to = message.from_user
+                        if m.chat_id == None:
+                            m.chat_id = message.chat_id
+                        if m.keyboards == []:
+                            keyboard = self.make_keyboard()
+                            if len(keyboard.responses) > 0:
+                                m.keyboards.append(keyboard)
+                    
                     self.kik.send_messages(r)
             return Response(status=200)
 
