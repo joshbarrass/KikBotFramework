@@ -11,7 +11,6 @@ class Bot(object):
     def __init__(self,username,api_key,webhook,case_sensitive=False,command_list="Commands"):
         self.functions = {}
         self.help = {}
-        self.keyboard_entries = []
         self.kik = KikApi(username, api_key)
         self.kik.set_configuration(Configuration(
             webhook=webhook
@@ -23,6 +22,7 @@ class Bot(object):
             if command_list != None:
                 command_list = command_list.lower()
         self.command_list_command = command_list
+        self.keyboard_entries = [self.command_list_command]
 
     def start(self,route="/incoming"):
         @app.route(route,methods=["POST","GET"])
